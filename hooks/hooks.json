@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-watch.sh\""}]}
+    ],
+    "PostToolUse": [
+      {"matcher": "*", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-watch.sh\""}]},
+      {"matcher": "Task|Agent", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" end"}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "Task|Agent", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" start"}]}
+    ],
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-id.sh\""}]},
+      {"matcher": "compact", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-fire.sh\" resume"}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-fire.sh\" stop"}]}
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "kitty-compact-handoff",
+  "description": "Self-compacting Claude Code sessions via kitty remote control",
+  "owner": { "name": "faryvojnik" },
+  "plugins": [
+    {
+      "name": "kitty-compact-handoff",
+      "source": "./",
+      "description": "Requires the kitty terminal: Claude Code saves its state near the context limit, compacts itself via kitty remote control and resumes without user input"
+    }
+  ]
+}
