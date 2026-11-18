@@ -35,19 +35,26 @@ tok 2500; echo '{"type":"system","subtype":"compact_boundary","content":"Convers
 watch; [ -z "$out" ] && [ ! -e "$t/claude-compact-$sid.level" ]; ok $? "pre-compact usage counted: $out"
 
 echo 'keep \\the plan\' >"$armed"
-printf 'S 1\n' >"$t/claude-agents-$sid"
-fire stop; [ -e "$armed" ] && [ ! -e "$t/kitty.log" ]; ok $? "live subagent: armed gone or sent"
-printf 'E 2\n' >>"$t/claude-agents-$sid"
+af=$t/claude-agents-$sid; now=$(date +%s)
+ac() { jq -nc --arg s "$sid" --arg a "$2" '{session_id:$s,agent_id:$a,agent_type:"worker"}' | bash "$here/agent-count.sh" "$1"; }
+printf 'S %s old x\n' $((now - 10800)) >"$af"
+ac start a1; [ "$(bash "$here/agent-count.sh" live "$af")" = 1 ] && [[ $(tail -n1 "$af") == "S "*" a1" ]]
+ok $? "start, stale S ignored: live=$(bash "$here/agent-count.sh" live "$af") file=$(cat "$af")"
+fire stop; [ -e "$armed" ] && [ ! -e "$t/kitty.log" ]; ok $? "fresh open id: armed gone or sent"
+printf 'E %s other\n' "$now" >>"$af"
 (unset KITTY_WINDOW_ID; fire stop; [ -e "$armed" ] && [ ! -e "$t/kitty.log" ]); ok $? "no kitty env: armed gone or sent"
+fire stop; [ -e "$armed" ] && [ ! -e "$t/kitty.log" ]; ok $? "E of other id closed S: armed gone or sent"
+ac end a1; [[ $(tail -n1 "$af") == "E "*" a1" ]]; ok $? "end: $(tail -n1 "$af")"
+[ "$(bash "$here/agent-count.sh" live "$t/missing")" = 0 ]; ok $? "live missing file"
 fire stop
 [ ! -e "$armed" ] && [ "$(cat "$t/kitty.log")" = "@ --to unix:$t/sock send-text --match id:7 /compact keep the plan
 @ --to unix:$t/sock send-key --match id:7 enter" ]
 ok $? "stop: armed=$(ls "$armed" 2>/dev/null) log=$(cat "$t/kitty.log" 2>/dev/null)"
 nf=$t/claude-compact-$sid.nagged; echo soft >"$t/claude-compact-$sid.level"
 KITTY_WINDOW_ID= fire stop; [ -z "$out" ] && [ ! -e "$nf" ]; ok $? "level, no kitty: $out"
-printf 'S 3\n' >>"$t/claude-agents-$sid"
+ac start a2
 fire stop; [ -z "$out" ]; ok $? "level + live subagent: $out"
-printf 'E 4\n' >>"$t/claude-agents-$sid"
+ac end a2
 fire stop; jq -e '.decision=="block" and (.reason|contains("soft threshold") and contains("not an anomaly") and contains("next safe point"))' <<<"$out" >/dev/null
 ok $? "stop level no armed: $out"
 fire stop; [ -z "$out" ]; ok $? "stop after block, same level: $out"
@@ -65,10 +72,7 @@ jq -e --arg p "$hf.restored" '.hookSpecificOutput.hookEventName=="SessionStart" 
 @ --to unix:$t/sock send-key --match id:7 enter" ]
 ok $? "resume: out=$out log=$(cat "$t/kitty.log" 2>/dev/null)"
 
-jq -nc --arg s "$sid" '{session_id:$s,tool_input:{description:"x"}}' >"$t/in.json"
-rm -f "$t/claude-agents-$sid"
-bash "$here/agent-count.sh" start <"$t/in.json"; bash "$here/agent-count.sh" end <"$t/in.json"
-[ "$(cut -c1-2 "$t/claude-agents-$sid" | tr '\n' ,)" = "S ,E ," ]; ok $? "agent-count: $(cat "$t/claude-agents-$sid")"
+jq -nc --arg s "$sid" '{session_id:$s}' >"$t/in.json"
 CLAUDE_ENV_FILE=$t/env bash "$here/session-id.sh" <"$t/in.json"
 [ "$(cat "$t/env")" = "export CLAUDE_SESSION_ID=s1" ]; ok $? "session-id: $(cat "$t/env" 2>/dev/null)"
 

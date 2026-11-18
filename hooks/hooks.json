@@ -4,11 +4,13 @@
       {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-watch.sh\""}]}
     ],
     "PostToolUse": [
-      {"matcher": "*", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-watch.sh\""}]},
-      {"matcher": "Task|Agent", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" end"}]}
+      {"matcher": "*", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/compact-watch.sh\""}]}
     ],
-    "PreToolUse": [
-      {"matcher": "Task|Agent", "hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" start"}]}
+    "SubagentStart": [
+      {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" start"}]}
+    ],
+    "SubagentStop": [
+      {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-count.sh\" end"}]}
     ],
     "SessionStart": [
       {"hooks": [{"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-id.sh\""}]},

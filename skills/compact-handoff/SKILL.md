@@ -7,11 +7,11 @@ description: Run when a `compact-watch:` line appears in context, or on `/kitty-
 
 `$sid` = `$CLAUDE_SESSION_ID` (exported per session by the plugin's `hooks/session-id.sh`). Files:
 `${COMPACT_STATE_DIR:-/tmp}/claude-handoff-$sid.md` (handoff), `${COMPACT_STATE_DIR:-/tmp}/claude-compact-$sid.armed`
-(one line = `/compact` instructions), `${COMPACT_STATE_DIR:-/tmp}/claude-agents-$sid` (subagent counter: more `S` lines than `E` lines = subagents alive).
+(one line = `/compact` instructions), `${COMPACT_STATE_DIR:-/tmp}/claude-agents-$sid` (subagent counter: `S` agent_ids without a matching `E`, younger than 120 min = alive).
 
 ## Procedure
 
-1. **Safe point.** No live subagents (counter file has more `S` than `E` lines), no question awaiting the user's
+1. **Safe point.** No live subagents (counter file), no question awaiting the user's
    answer, every parallel chain at a stable, recorded point (finish or park it and note where). Soft signal: may
    finish the current step first. Hard signal: start nothing new. Not at a safe point → say why in one line, end the
    turn, retry at the next safe point.

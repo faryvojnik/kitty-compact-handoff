@@ -5,7 +5,7 @@ in=$(cat)
 eval "$(jq -r '@sh "sid=\(.session_id // "") tr=\(.transcript_path // "") ev=\(.hook_event_name // "") aid=\(.agent_id // "")"' <<<"$in" 2>/dev/null)"
 [ -n "$sid" ] && [ -z "$aid" ] || exit 0
 d=${COMPACT_STATE_DIR:-/tmp}; lf="$d/claude-compact-$sid.level"
-soft=${COMPACT_SOFT:-300000}; hard=${COMPACT_HARD:-450000}
+soft=${COMPACT_SOFT:-800000}; hard=${COMPACT_HARD:-950000}
 # newest decisive line wins: a compact_boundary means no post-compact reply yet, so 0;
 # top-level "type":"assistant" follows "usage" in real lines, so filter by jq; attachments also carry "usage"
 n=$(tac "$tr" 2>/dev/null | grep -e '"usage"' -e compact_boundary | jq -n 'first(inputs

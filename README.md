@@ -10,7 +10,7 @@ without the user typing anything.
 1. `compact-watch` (UserPromptSubmit / PostToolUse hook) reads token usage from the transcript. Past the soft or
    hard threshold it nudges the model to run the `compact-handoff` skill.
 2. The skill persists state to `/tmp/claude-handoff-<sid>.md` and writes an armed file.
-3. The Stop hook waits until no subagent is running, then types `/compact <instructions>` into the kitty window
+3. The Stop hook waits until no subagent is running (SubagentStart/SubagentStop paired by `agent_id`), then types `/compact <instructions>` into the kitty window
    via `kitty @ send-text` + `send-key enter`.
 4. The SessionStart `compact` hook renames the handoff file to `.restored` and types `next`; the model re-reads
    the file and continues.
@@ -38,11 +38,15 @@ Environment variables:
 
 | variable | default | meaning |
 |---|---|---|
-| `COMPACT_SOFT` | `300000` | soft threshold, tokens |
-| `COMPACT_HARD` | `450000` | hard threshold, tokens |
+| `COMPACT_SOFT` | `800000` | soft threshold, tokens |
+| `COMPACT_HARD` | `950000` | hard threshold, tokens |
 | `COMPACT_STATE_DIR` | `/tmp` | where state files live |
 | `COMPACT_FIRE_DELAY` | `2` | seconds before typing `/compact` |
 | `COMPACT_ENTER_DELAY` | `0.5` | seconds between text and Enter |
+| `COMPACT_AGENT_STALE_MIN` | `120` | minutes after which a subagent start with no matching stop counts as dead |
+
+The defaults assume a 1M-token context window; with a 200K window set `COMPACT_SOFT`/`COMPACT_HARD` lower
+(e.g. `150000`/`180000`).
 
 ## Test
 

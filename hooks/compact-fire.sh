@@ -16,7 +16,8 @@ case "$1" in
   stop)
     af="$d/claude-compact-$sid.armed"; cf="$d/claude-agents-$sid"
     [ -n "$KITTY_WINDOW_ID" ] && [ -n "$KITTY_LISTEN_ON" ] || exit 0
-    [ -s "$cf" ] && [ "$(grep -c '^S ' "$cf")" -gt "$(grep -c '^E ' "$cf")" ] && exit 0
+    n=$(bash "$(dirname "$0")/agent-count.sh" live "$cf")
+    [ "$n" -gt 0 ] && exit 0
     if [ -e "$af" ]; then
       # kitty send-text applies Python escape rules to its text
       instr=$(head -n1 "$af" | tr -d '\\')
