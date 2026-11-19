@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# stop (Stop): types "/compact <armed instructions>" once no subagent runs; else blocks turn end once per level.
+# stop (Stop): types a short fixed "/compact" naming the handoff file; else blocks turn end once per level.
 # resume (SessionStart compact, main session only): renames handoff to .restored, points at it, types "next".
 # Typed late, detached (TUI reads input after hook returns); Enter via send-key: send-text's \r pastes as newline.
 in=$(cat)
 eval "$(jq -r '@sh "sid=\(.session_id // "") aid=\(.agent_id // "")"' <<<"$in" 2>/dev/null)"
 [ -n "$sid" ] || exit 0
 d=${COMPACT_STATE_DIR:-/tmp}
+hf="$d/claude-handoff-$sid.md"
 type_later() {
   [ -n "$KITTY_WINDOW_ID" ] && [ -n "$KITTY_LISTEN_ON" ] || return 0
   setsid nohup bash -c 'sleep "$1"; kitty @ --to "$2" send-text --match "id:$3" "$4"; sleep "$5"
@@ -19,10 +20,8 @@ case "$1" in
     n=$(bash "$(dirname "$0")/agent-count.sh" live "$cf")
     [ "$n" -gt 0 ] && exit 0
     if [ -e "$af" ]; then
-      # kitty send-text applies Python escape rules to its text
-      instr=$(head -n1 "$af" | tr -d '\\')
       rm -f "$af" "$d/claude-compact-$sid.level" "$d/claude-compact-$sid.nagged"
-      type_later "/compact $instr"
+      type_later "/compact Keep what $hf lists: task ids, paths, next step."
       exit 0
     fi
     # nagged holds the level already blocked for: one block per crossing, no loop; compact-watch clears it on reset
@@ -33,7 +32,6 @@ case "$1" in
       '{decision:"block",reason:$r}'
     ;;
   resume)
-    hf="$d/claude-handoff-$sid.md"
     [ -z "$aid" ] && [ -e "$hf" ] || exit 0
     # renamed first so a stale handoff cannot re-trigger on a later compact
     mv -f "$hf" "$hf.restored" || exit 0

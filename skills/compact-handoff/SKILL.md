@@ -7,7 +7,7 @@ description: Run when a `compact-watch:` line appears in context, or on `/kitty-
 
 `$sid` = `$CLAUDE_SESSION_ID` (exported per session by the plugin's `hooks/session-id.sh`). Files:
 `${COMPACT_STATE_DIR:-/tmp}/claude-handoff-$sid.md` (handoff), `${COMPACT_STATE_DIR:-/tmp}/claude-compact-$sid.armed`
-(one line = `/compact` instructions), `${COMPACT_STATE_DIR:-/tmp}/claude-agents-$sid` (subagent counter: `S` agent_ids without a matching `E`, younger than 120 min = alive).
+(flag; content unused), `${COMPACT_STATE_DIR:-/tmp}/claude-agents-$sid` (subagent counter: `S` agent_ids without a matching `E`, younger than 120 min = alive).
 
 ## Procedure
 
@@ -18,12 +18,12 @@ description: Run when a `compact-watch:` line appears in context, or on `/kitty-
 2. **Persist state.** If the project uses an issue tracker (e.g. bd/beads), create issues for untracked work, write a
    per-task handoff note (done, next step, paths/branches, open questions, decisions made in conversation) and set
    real statuses there. Otherwise all of this goes into the handoff file.
-3. **Handoff file** `${COMPACT_STATE_DIR:-/tmp}/claude-handoff-$sid.md`, ≤~20 lines: active task ids, current step, next step, what to
-   tell the user after resume.
+3. **Handoff file** `${COMPACT_STATE_DIR:-/tmp}/claude-handoff-$sid.md`, ≤~20 lines: everything the summary must keep: active task ids,
+   paths, current step, next step, what to tell the user after resume.
 4. **Arm or fall back.** Any of `$KITTY_WINDOW_ID`, `$KITTY_LISTEN_ON`, `$CLAUDE_SESSION_ID` empty → tell the user state is saved and ask them
-   to run `/compact` themselves (the resume hook also fires on a manual `/compact`). Otherwise write the armed file —
-   one line, no backslashes, no newlines: what the summary must keep (task ids, paths, next step) — tell the user in
-   one line you are going to compact, and end the turn. The Stop hook types `/compact <instructions>`.
+   to run `/compact` themselves (the resume hook also fires on a manual `/compact`). Otherwise touch the armed file,
+   tell the user in one line you are going to compact, and end the turn.
+   The Stop hook types a fixed short `/compact` line pointing at the handoff file (long text would paste as a block).
 5. **After compact** (a `compact-handoff resume:` line arrives; the hook renamed the handoff file to
    `${COMPACT_STATE_DIR:-/tmp}/claude-handoff-$sid.md.restored`): re-read the project instructions (CLAUDE.md), the `.restored` file and
    the tracker ids listed in it; delete the `.restored` file; continue from the next step. The first reply says where

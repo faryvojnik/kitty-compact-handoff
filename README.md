@@ -9,8 +9,8 @@ without the user typing anything.
 
 1. `compact-watch` (UserPromptSubmit / PostToolUse hook) reads token usage from the transcript. Past the soft or
    hard threshold it nudges the model to run the `compact-handoff` skill.
-2. The skill persists state to `/tmp/claude-handoff-<sid>.md` and writes an armed file.
-3. The Stop hook waits until no subagent is running (SubagentStart/SubagentStop paired by `agent_id`), then types `/compact <instructions>` into the kitty window
+2. The skill persists state to `/tmp/claude-handoff-<sid>.md` and writes an armed flag file.
+3. The Stop hook waits until no subagent is running (SubagentStart/SubagentStop paired by `agent_id`), then types a fixed short `/compact` line pointing at the handoff file into the kitty window
    via `kitty @ send-text` + `send-key enter`.
 4. The SessionStart `compact` hook renames the handoff file to `.restored` and types `next`; the model re-reads
    the file and continues.

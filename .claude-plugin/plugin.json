@@ -1,6 +1,6 @@
 {
   "name": "kitty-compact-handoff",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Requires the kitty terminal: Claude Code saves its state near the context limit, compacts itself via kitty remote control and resumes without user input",
   "author": { "name": "faryvojnik" },
   "license": "MIT",

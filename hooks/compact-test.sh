@@ -34,7 +34,7 @@ watch; [ -z "$out" ] && [ "$(cat "$t/claude-compact-$sid.level")" = soft ]; ok $
 tok 2500; echo '{"type":"system","subtype":"compact_boundary","content":"Conversation compacted"}' >>"$tr"
 watch; [ -z "$out" ] && [ ! -e "$t/claude-compact-$sid.level" ]; ok $? "pre-compact usage counted: $out"
 
-echo 'keep \\the plan\' >"$armed"
+echo 'T-1' >"$armed"
 af=$t/claude-agents-$sid; now=$(date +%s)
 ac() { jq -nc --arg s "$sid" --arg a "$2" '{session_id:$s,agent_id:$a,agent_type:"worker"}' | bash "$here/agent-count.sh" "$1"; }
 printf 'S %s old x\n' $((now - 10800)) >"$af"
@@ -47,9 +47,10 @@ fire stop; [ -e "$armed" ] && [ ! -e "$t/kitty.log" ]; ok $? "E of other id clos
 ac end a1; [[ $(tail -n1 "$af") == "E "*" a1" ]]; ok $? "end: $(tail -n1 "$af")"
 [ "$(bash "$here/agent-count.sh" live "$t/missing")" = 0 ]; ok $? "live missing file"
 fire stop
-[ ! -e "$armed" ] && [ "$(cat "$t/kitty.log")" = "@ --to unix:$t/sock send-text --match id:7 /compact keep the plan
+[ ! -e "$armed" ] && [ "$(cat "$t/kitty.log")" = "@ --to unix:$t/sock send-text --match id:7 /compact Keep what $t/claude-handoff-$sid.md lists: task ids, paths, next step.
 @ --to unix:$t/sock send-key --match id:7 enter" ]
 ok $? "stop: armed=$(ls "$armed" 2>/dev/null) log=$(cat "$t/kitty.log" 2>/dev/null)"
+[ "$(head -n1 "$t/kitty.log" | sed 's/.*send-text --match id:7 //' | wc -c)" -lt 400 ]; ok $? "stop: send-text payload >=400 chars"
 nf=$t/claude-compact-$sid.nagged; echo soft >"$t/claude-compact-$sid.level"
 KITTY_WINDOW_ID= fire stop; [ -z "$out" ] && [ ! -e "$nf" ]; ok $? "level, no kitty: $out"
 ac start a2
